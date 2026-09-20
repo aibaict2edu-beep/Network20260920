@@ -155,26 +155,8 @@
 .layer-cell--physical { min-height: 190px; }
 
 /* ===========================================================
-   各段の説明文(クリックで見る)
+   各段の説明文
    =========================================================== */
-.layers-role-details { margin: 0.05rem 0 0.25rem; }
-
-.layers-role-details summary {
-  list-style: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.72rem;
-  color: var(--accent-teal-dark);
-  font-family: var(--font-data);
-}
-
-.layers-role-details summary::-webkit-details-marker { display: none; }
-.layers-role-details summary::marker { content: ""; }
-.layers-role-details summary::before { content: "▸"; }
-.layers-role-details[open] summary::before { content: "▾"; }
-
 .layers-role {
   font-size: 0.78rem;
   color: var(--ink-soft);
@@ -240,18 +222,12 @@
 }
 
 /* ===========================================================
-   ② 送信順・到着順の一覧表示
+   ① 送信順・到着順(送信側/受信側それぞれの1層の下に表示)
    =========================================================== */
-.layers-order-summary {
-  grid-column: 1 / -1;
-  display: flex;
-  gap: 1.2rem;
-  flex-wrap: wrap;
-  margin-top: 0.3rem;
-  font-size: 0.82rem;
+.layers-order-line {
+  font-size: 0.78rem;
+  margin: 0.35rem 0 0;
 }
-
-.layers-order-summary .hint { margin: 0; }
 
 #sentOrderText,
 #arrivedOrderText {

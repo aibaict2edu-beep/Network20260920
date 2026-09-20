@@ -20,7 +20,10 @@
       <p>送信側と受信側、4つの層を1枚の図で見比べる</p>
     </div>
   </div>
-  <a class="ghost-btn" href="index.html">← ステップ版に戻る</a>
+  <nav class="page-tabs" aria-label="ページ切り替え">
+    <a class="page-tabs__item" href="index.html">ステップ版</a>
+    <span class="page-tabs__item is-active" aria-current="page">全体図(4層図)</span>
+  </nav>
 </header>
 
 <main class="layers-main">
@@ -77,13 +80,13 @@
       <!-- 4層 アプリケーション層 -->
       <div class="layer-cell" data-row="send-app">
         <span class="layer-pill layer-pill--app">4層 アプリケーション層</span>
-        <details class="layers-role-details"><summary>説明を見る</summary><p class="layers-role">送りたい内容そのものを用意する</p></details>
+        <p class="layers-role">送りたい内容そのものを用意する</p>
         <div class="layers-packets" id="cell-send-app"></div>
       </div>
       <div class="layer-gutter"></div>
       <div class="layer-cell" data-row="receive-app">
         <span class="layer-pill layer-pill--app">4層 アプリケーション層</span>
-        <details class="layers-role-details"><summary>説明を見る</summary><p class="layers-role">中身のデータを受け取る</p></details>
+        <p class="layers-role">中身のデータを受け取る</p>
         <div class="layers-packets" id="cell-receive-app"></div>
         <div id="finalResult" class="reassembled" hidden>
           <p class="field-label">組み立てられた内容</p>
@@ -95,48 +98,44 @@
       <!-- 3層 トランスポート層 -->
       <div class="layer-cell" data-row="send-transport">
         <span class="layer-pill layer-pill--transport">3層 トランスポート層</span>
-        <details class="layers-role-details"><summary>説明を見る</summary><p class="layers-role">分割した荷物に通し番号をつける</p></details>
+        <p class="layers-role">分割した荷物に通し番号をつける</p>
         <div class="layers-packets" id="cell-send-transport"></div>
       </div>
       <div class="layer-gutter"></div>
       <div class="layer-cell" data-row="receive-transport">
         <span class="layer-pill layer-pill--transport">3層 トランスポート層</span>
-        <details class="layers-role-details"><summary>説明を見る</summary><p class="layers-role">通し番号を確認し、正しい順に並べ替える</p></details>
+        <p class="layers-role">通し番号を確認し、正しい順に並べ替える</p>
         <div class="layers-packets" id="cell-receive-transport"></div>
       </div>
 
       <!-- 2層 インターネット層 -->
       <div class="layer-cell" data-row="send-network">
         <span class="layer-pill layer-pill--network">2層 インターネット層</span>
-        <details class="layers-role-details"><summary>説明を見る</summary><p class="layers-role">送信元・宛先のIPアドレスを荷札に書く</p></details>
+        <p class="layers-role">送信元・宛先のIPアドレスを荷札に書く</p>
         <div class="layers-packets" id="cell-send-network"></div>
       </div>
       <div class="layer-gutter"></div>
       <div class="layer-cell" data-row="receive-network">
         <span class="layer-pill layer-pill--network">2層 インターネット層</span>
-        <details class="layers-role-details"><summary>説明を見る</summary><p class="layers-role">IPアドレスを確認する(自分宛か確かめる)</p></details>
+        <p class="layers-role">IPアドレスを確認する(自分宛か確かめる)</p>
         <div class="layers-packets" id="cell-receive-network"></div>
       </div>
 
       <!-- 1層 ネットワークインターフェース層(伝送経路) -->
       <div class="layer-cell layer-cell--physical" data-row="send-physical">
         <span class="layer-pill layer-pill--physical">1層 ネットワークインターフェース層</span>
-        <details class="layers-role-details"><summary>説明を見る</summary><p class="layers-role">電気信号・電波として送り出す</p></details>
+        <p class="layers-role">電気信号・電波として送り出す</p>
         <div class="layers-packets" id="cell-send-physical"></div>
+        <p class="hint layers-order-line" id="sentOrderLine" hidden>送信順: <span id="sentOrderText"></span></p>
       </div>
       <div class="layer-gutter layer-gutter--track">
         <div class="transit__track" id="layersTrack"></div>
       </div>
       <div class="layer-cell layer-cell--physical" data-row="receive-physical">
         <span class="layer-pill layer-pill--physical">1層 ネットワークインターフェース層</span>
-        <details class="layers-role-details"><summary>説明を見る</summary><p class="layers-role">電気信号・電波を受信する</p></details>
+        <p class="layers-role">電気信号・電波を受信する</p>
         <div class="layers-packets" id="cell-receive-physical"></div>
-      </div>
-
-      <!-- 送信順・到着順の一覧(1層の伝送経路の下にまとめて表示) -->
-      <div class="layers-order-summary" id="orderSummary">
-        <p class="hint" id="sentOrderLine" hidden>送信順: <span id="sentOrderText"></span></p>
-        <p class="hint" id="arrivedOrderLine" hidden>到着順: <span id="arrivedOrderText"></span></p>
+        <p class="hint layers-order-line" id="arrivedOrderLine" hidden>到着順: <span id="arrivedOrderText"></span></p>
       </div>
 
     </div>
