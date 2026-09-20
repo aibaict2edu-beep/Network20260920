@@ -10,18 +10,25 @@ const state = {
   packets: [],       // { seq, total, data }
   srcIp: "192.168.1.10",
   dstIp: "192.168.1.20",
-  buildLevel: 0,      // 0:データのみ 1:+通信管理層 2:+アドレス層(完成)
+  buildLevel: 0,      // 0:データのみ 1:+トランスポート層 2:+インターネット層(完成)
   arrivalOrder: [],   // 到着順の seq 配列
   inbox: [],          // { seq, peel }  peel 0..3
 };
 
 const stepLayerMap = {
   1: "app",
-  2: "app",
-  3: null, // 動的に切り替える
+  2: "transport",
+  3: null, // 動的に切り替える(荷札を重ねる操作に応じて変化)
   4: "physical",
-  5: null,
+  5: "all",
   6: null,
+};
+
+const LAYER_NAMES = {
+  app: "層4 アプリケーション層",
+  transport: "層3 トランスポート層",
+  network: "層2 インターネット層",
+  physical: "層1 ネットワークインターフェース層",
 };
 
 function escapeHtml(str) {
@@ -95,7 +102,8 @@ function closeLayerGuide() {
 }
 function updateLayerHighlight(layerKey) {
   document.querySelectorAll(".layer-card").forEach((el) => {
-    el.classList.toggle("is-active", layerKey !== null && el.dataset.layer === layerKey);
+    const active = layerKey === "all" || (layerKey !== null && el.dataset.layer === layerKey);
+    el.classList.toggle("is-active", active);
   });
 }
 
@@ -173,25 +181,40 @@ function renderStep3() {
   syncIpLabels();
 }
 
+const step3LayerBadge = document.getElementById("step3LayerBadge");
+
 function renderBuildStage() {
   const packet = state.packets[0];
   if (!packet) return;
   buildStage.innerHTML = renderBuildHTML(packet, state.buildLevel);
-  const labels = ["データ本体だけの状態", "通信管理層の荷札を追加した状態", "アドレス層の荷札まで追加し、完成した状態"];
+  const labels = [
+    "層4 アプリケーション層:まだ荷札がない、データ本体だけの状態",
+    "層3 トランスポート層の荷札(通し番号)を追加した状態",
+    "層2 インターネット層の荷札(IPアドレス)まで追加し、完成した状態",
+  ];
   buildStatus.textContent = labels[state.buildLevel];
+  const currentLayer = ["app", "transport", "network"][state.buildLevel];
+  setLayerPill(step3LayerBadge, currentLayer);
+  updateLayerHighlight(currentLayer);
+}
+
+function setLayerPill(el, layerKey) {
+  if (!el || !layerKey) return;
+  el.className = `layer-pill layer-pill--${layerKey}`;
+  el.textContent = LAYER_NAMES[layerKey];
 }
 
 function renderBuildHTML(packet, level) {
   const dataDiv = `
     <div class="parcel parcel--data">
-      <span class="parcel__tag">データ本体(アプリケーション層)</span>
+      <span class="parcel__tag">層4 アプリケーション層(データ本体)</span>
       <div class="parcel__body">${escapeHtml(packet.data) || "(空)"}</div>
     </div>`;
   if (level === 0) return dataDiv;
 
   const transportDiv = `
     <div class="parcel parcel--transport">
-      <span class="parcel__tag">通信管理層(通し番号)</span>
+      <span class="parcel__tag">層3 トランスポート層(通し番号)</span>
       <div class="parcel__body">${packet.seq} / ${packet.total} 番目</div>
       ${dataDiv}
     </div>`;
@@ -199,7 +222,7 @@ function renderBuildHTML(packet, level) {
 
   return `
     <div class="parcel parcel--network">
-      <span class="parcel__tag">アドレス層</span>
+      <span class="parcel__tag">層2 インターネット層(IPアドレス)</span>
       <div class="parcel__body">送信元 ${escapeHtml(state.srcIp)} → 宛先 ${escapeHtml(state.dstIp)}</div>
       ${transportDiv}
     </div>`;
@@ -208,7 +231,6 @@ function renderBuildHTML(packet, level) {
 wrapStepBtn.addEventListener("click", () => {
   if (state.buildLevel < 2) {
     state.buildLevel += 1;
-    updateLayerHighlight(state.buildLevel === 1 ? "transport" : "network");
     renderBuildStage();
   }
   if (state.buildLevel === 2) {
@@ -246,18 +268,26 @@ function renderStep4Reset() {
   toStep5Btn.disabled = true;
   sendBtn.disabled = false;
   sendBtn.textContent = "荷物を送り出す";
+  document.getElementById("arrivalOrderBox").hidden = true;
   syncIpLabels();
 }
+
+const arrivalOrderBox = document.getElementById("arrivalOrderBox");
+const arrivalOrderText = document.getElementById("arrivalOrderText");
 
 sendBtn.addEventListener("click", () => {
   sendBtn.disabled = true;
   sendBtn.textContent = "送信中...";
   toStep5Btn.disabled = true;
   transitTrack.innerHTML = "";
+  arrivalOrderBox.hidden = true;
+  arrivalOrderText.textContent = "";
   state.arrivalOrder = [];
+  updateLayerHighlight("physical");
 
   const shuffle = shuffleToggle.checked;
   const n = state.packets.length;
+  const arrivalSlot = { count: 0 }; // 到着後に並べる位置(右端で重ならないように)
 
   state.packets.forEach((p, i) => {
     const el = document.createElement("div");
@@ -278,8 +308,16 @@ sendBtn.addEventListener("click", () => {
     el.style.animationDelay = `${delay}s`;
 
     el.addEventListener("animationend", () => {
-      el.style.opacity = "0";
+      // 届いた荷物は消さず、右端に「到着◯番目」として残しておく
       state.arrivalOrder.push(p.seq);
+      arrivalSlot.count += 1;
+      el.classList.add("has-arrived");
+      el.style.top = `${10 + ((arrivalSlot.count - 1) % 5) * 16}%`;
+      el.textContent = `#${p.seq}\n着${arrivalSlot.count}`;
+
+      arrivalOrderBox.hidden = false;
+      arrivalOrderText.textContent = state.arrivalOrder.map((seq) => `#${seq}`).join(" → ");
+
       if (state.arrivalOrder.length === n) {
         sendBtn.disabled = false;
         sendBtn.textContent = "もう一度送り出す";
@@ -327,15 +365,15 @@ function renderParcelForInbox(item) {
     </div>`;
   }
   const dataInner = item.peel >= 3
-    ? `<div class="parcel parcel--data"><span class="parcel__tag">データ本体</span><div class="parcel__body">${escapeHtml(packet.data) || "(空)"}</div></div>`
-    : `<div class="parcel parcel--data" style="opacity:.35"><span class="parcel__tag">データ本体</span><div class="parcel__body">▶ まだ見えない</div></div>`;
+    ? `<div class="parcel parcel--data"><span class="parcel__tag">層4 アプリケーション層(データ本体)</span><div class="parcel__body">${escapeHtml(packet.data) || "(空)"}</div></div>`
+    : `<div class="parcel parcel--data" style="opacity:.35"><span class="parcel__tag">層4 アプリケーション層</span><div class="parcel__body">▶ まだ見えない</div></div>`;
 
   const transportInner = item.peel >= 2
-    ? `<div class="parcel parcel--transport"><span class="parcel__tag">通信管理層(通し番号)</span><div class="parcel__body">${packet.seq} / ${packet.total} 番目</div>${dataInner}</div>`
-    : `<div class="parcel parcel--transport" style="opacity:.35"><span class="parcel__tag">通信管理層</span><div class="parcel__body">▶ まだ見えない</div></div>`;
+    ? `<div class="parcel parcel--transport"><span class="parcel__tag">層3 トランスポート層(通し番号)</span><div class="parcel__body">${packet.seq} / ${packet.total} 番目</div>${dataInner}</div>`
+    : `<div class="parcel parcel--transport" style="opacity:.35"><span class="parcel__tag">層3 トランスポート層</span><div class="parcel__body">▶ まだ見えない</div></div>`;
 
   return `<div class="parcel parcel--network" data-seq="${item.seq}">
-    <span class="parcel__tag">アドレス層</span>
+    <span class="parcel__tag">層2 インターネット層(IPアドレス)</span>
     <div class="parcel__body">送信元 ${escapeHtml(state.srcIp)} → 宛先 ${escapeHtml(state.dstIp)}</div>
     ${transportInner}
   </div>`;
@@ -350,6 +388,7 @@ function renderInbox() {
       const seq = Number(el.dataset.seq);
       const item = state.inbox.find((it) => it.seq === seq);
       if (item.peel < 3) item.peel += 1;
+      updateLayerHighlight(["physical", "network", "transport", "app"][item.peel]);
       renderInbox();
       checkAllPeeled();
     });
@@ -363,11 +402,13 @@ function checkAllPeeled() {
 
 peelAllBtn.addEventListener("click", () => {
   state.inbox.forEach((it) => (it.peel = 3));
+  updateLayerHighlight("app");
   renderInbox();
   checkAllPeeled();
 });
 
 sortBtn.addEventListener("click", () => {
+  updateLayerHighlight("transport");
   state.inbox.sort((a, b) => a.seq - b.seq);
   renderInbox();
   const joined = state.inbox.map((it) => findPacket(it.seq).data).join("");
@@ -398,17 +439,17 @@ const quizData = [
     explain: "通信回線には一度に送れる量の限度がある。だから大きなデータは小分けにして送る。",
   },
   {
-    q: "通信管理層がつける「通し番号」の荷札は、主に何のためにある?",
+    q: "トランスポート層がつける「通し番号」の荷札は、主に何のためにある?",
     options: [
       "荷物の重さを量るため",
       "バラバラの順番で届いても、正しい順に並べ直せるようにするため",
       "宛先の住所を書くため",
     ],
     correct: 1,
-    explain: "通り道によって届く速さが変わるため、パケットは送った順に届くとは限らない。通し番号があるから、受け取った側で正しく並べ替えられる。",
+    explain: "通り道によって届く速さが変わるため、パケットは送った順に届くとは限らない。通し番号があるから、受け取った側(トランスポート層)で正しく並べ替えられる。",
   },
   {
-    q: "アドレス層がつけるIPアドレスの荷札は、主に何を表している?",
+    q: "インターネット層がつけるIPアドレスの荷札は、主に何を表している?",
     options: [
       "データが何番目の荷物かということ",
       "データの中身が何文字かということ",
