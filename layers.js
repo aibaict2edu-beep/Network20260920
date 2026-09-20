@@ -19,23 +19,23 @@ let autoPlayActive = false;
 
 /* 段階の定義。key はDOMの data-row / id と対応する(transit は専用処理) */
 const STAGES = [
-  { key: "send-app",         pill: "app",        label: "層4 アプリケーション層",
+  { key: "send-app",         pill: "app",        label: "4層 アプリケーション層",
     desc: "送りたい内容(手紙の中身)を用意した状態です。" },
-  { key: "send-transport",   pill: "transport",   label: "層3 トランスポート層",
+  { key: "send-transport",   pill: "transport",   label: "3層 トランスポート層",
     desc: "トランスポート層が、分割した荷物に通し番号を付けました。" },
-  { key: "send-network",     pill: "network",     label: "層2 インターネット層",
+  { key: "send-network",     pill: "network",     label: "2層 インターネット層",
     desc: "インターネット層が、送信元と宛先のIPアドレスを荷札に書きました。" },
-  { key: "send-physical",    pill: "physical",    label: "層1 ネットワークインターフェース層",
+  { key: "send-physical",    pill: "physical",    label: "1層 ネットワークインターフェース層",
     desc: "ネットワークインターフェース層が、荷物を電気信号・電波に変えて送信の準備をしました。" },
-  { key: "transit",          pill: "physical",    label: "層1 ネットワークインターフェース層(伝送中)",
+  { key: "transit",          pill: "physical",    label: "1層 ネットワークインターフェース層(伝送中)",
     desc: "電気信号・電波としてケーブルや無線の中を運ばれています。届く順番が入れ替わることもあります。" },
-  { key: "receive-physical", pill: "physical",    label: "層1 ネットワークインターフェース層",
+  { key: "receive-physical", pill: "physical",    label: "1層 ネットワークインターフェース層",
     desc: "受信側が電気信号・電波を受け取りました。" },
-  { key: "receive-network",  pill: "network",     label: "層2 インターネット層",
+  { key: "receive-network",  pill: "network",     label: "2層 インターネット層",
     desc: "インターネット層が、IPアドレスを確認して自分宛かどうか確かめました。" },
-  { key: "receive-transport",pill: "transport",   label: "層3 トランスポート層",
+  { key: "receive-transport",pill: "transport",   label: "3層 トランスポート層",
     desc: "トランスポート層が、通し番号を確認して正しい順番に並べ替えました。" },
-  { key: "receive-app",      pill: "app",         label: "層4 アプリケーション層",
+  { key: "receive-app",      pill: "app",         label: "4層 アプリケーション層",
     desc: "アプリケーション層が中身のデータを受け取り、元の内容が復元されました。" },
 ];
 
@@ -175,7 +175,7 @@ function updateFinalResult() {
 }
 
 /* ===========================================================
-   伝送(層1どうしをつなぐ経路)のアニメーション
+   伝送(1層どうしをつなぐ経路)のアニメーション
    =========================================================== */
 function runCrossing(onComplete) {
   layersTrack.innerHTML = "";
@@ -191,7 +191,7 @@ function runCrossing(onComplete) {
     const el = document.createElement("div");
     el.className = "envelope";
     el.textContent = `#${p.seq}`;
-    el.style.top = `${10 + (i % 4) * 20}%`;
+    el.style.top = `${8 + (i % 6) * 15}%`;
 
     let duration, delay;
     if (shuffle) {
@@ -232,7 +232,7 @@ function advance(onDone) {
   const nextIndex = state.stage + 1;
 
   if (nextIndex === 4) {
-    // これから伝送(層1どうしの経路)へ入る
+    // これから伝送(1層どうしの経路)へ入る
     state.stage = 4;
     renderAllCells();
     runCrossing(() => {

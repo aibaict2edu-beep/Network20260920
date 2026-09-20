@@ -25,10 +25,10 @@ const stepLayerMap = {
 };
 
 const LAYER_NAMES = {
-  app: "層4 アプリケーション層",
-  transport: "層3 トランスポート層",
-  network: "層2 インターネット層",
-  physical: "層1 ネットワークインターフェース層",
+  app: "4層 アプリケーション層",
+  transport: "3層 トランスポート層",
+  network: "2層 インターネット層",
+  physical: "1層 ネットワークインターフェース層",
 };
 
 function escapeHtml(str) {
@@ -188,9 +188,9 @@ function renderBuildStage() {
   if (!packet) return;
   buildStage.innerHTML = renderBuildHTML(packet, state.buildLevel);
   const labels = [
-    "層4 アプリケーション層:まだ荷札がない、データ本体だけの状態",
-    "層3 トランスポート層の荷札(通し番号)を追加した状態",
-    "層2 インターネット層の荷札(IPアドレス)まで追加し、完成した状態",
+    "4層 アプリケーション層:まだ荷札がない、データ本体だけの状態",
+    "3層 トランスポート層の荷札(通し番号)を追加した状態",
+    "2層 インターネット層の荷札(IPアドレス)まで追加し、完成した状態",
   ];
   buildStatus.textContent = labels[state.buildLevel];
   const currentLayer = ["app", "transport", "network"][state.buildLevel];
@@ -207,14 +207,14 @@ function setLayerPill(el, layerKey) {
 function renderBuildHTML(packet, level) {
   const dataDiv = `
     <div class="parcel parcel--data">
-      <span class="parcel__tag">層4 アプリケーション層(データ本体)</span>
+      <span class="parcel__tag">4層 アプリケーション層(データ本体)</span>
       <div class="parcel__body">${escapeHtml(packet.data) || "(空)"}</div>
     </div>`;
   if (level === 0) return dataDiv;
 
   const transportDiv = `
     <div class="parcel parcel--transport">
-      <span class="parcel__tag">層3 トランスポート層(通し番号)</span>
+      <span class="parcel__tag">3層 トランスポート層(通し番号)</span>
       <div class="parcel__body">${packet.seq} / ${packet.total} 番目</div>
       ${dataDiv}
     </div>`;
@@ -222,7 +222,7 @@ function renderBuildHTML(packet, level) {
 
   return `
     <div class="parcel parcel--network">
-      <span class="parcel__tag">層2 インターネット層(IPアドレス)</span>
+      <span class="parcel__tag">2層 インターネット層(IPアドレス)</span>
       <div class="parcel__body">送信元 ${escapeHtml(state.srcIp)} → 宛先 ${escapeHtml(state.dstIp)}</div>
       ${transportDiv}
     </div>`;
@@ -365,15 +365,15 @@ function renderParcelForInbox(item) {
     </div>`;
   }
   const dataInner = item.peel >= 3
-    ? `<div class="parcel parcel--data"><span class="parcel__tag">層4 アプリケーション層(データ本体)</span><div class="parcel__body">${escapeHtml(packet.data) || "(空)"}</div></div>`
-    : `<div class="parcel parcel--data" style="opacity:.35"><span class="parcel__tag">層4 アプリケーション層</span><div class="parcel__body">▶ まだ見えない</div></div>`;
+    ? `<div class="parcel parcel--data"><span class="parcel__tag">4層 アプリケーション層(データ本体)</span><div class="parcel__body">${escapeHtml(packet.data) || "(空)"}</div></div>`
+    : `<div class="parcel parcel--data" style="opacity:.35"><span class="parcel__tag">4層 アプリケーション層</span><div class="parcel__body">▶ まだ見えない</div></div>`;
 
   const transportInner = item.peel >= 2
-    ? `<div class="parcel parcel--transport"><span class="parcel__tag">層3 トランスポート層(通し番号)</span><div class="parcel__body">${packet.seq} / ${packet.total} 番目</div>${dataInner}</div>`
-    : `<div class="parcel parcel--transport" style="opacity:.35"><span class="parcel__tag">層3 トランスポート層</span><div class="parcel__body">▶ まだ見えない</div></div>`;
+    ? `<div class="parcel parcel--transport"><span class="parcel__tag">3層 トランスポート層(通し番号)</span><div class="parcel__body">${packet.seq} / ${packet.total} 番目</div>${dataInner}</div>`
+    : `<div class="parcel parcel--transport" style="opacity:.35"><span class="parcel__tag">3層 トランスポート層</span><div class="parcel__body">▶ まだ見えない</div></div>`;
 
   return `<div class="parcel parcel--network" data-seq="${item.seq}">
-    <span class="parcel__tag">層2 インターネット層(IPアドレス)</span>
+    <span class="parcel__tag">2層 インターネット層(IPアドレス)</span>
     <div class="parcel__body">送信元 ${escapeHtml(state.srcIp)} → 宛先 ${escapeHtml(state.dstIp)}</div>
     ${transportInner}
   </div>`;

@@ -9,13 +9,53 @@
   gap: 1.2rem;
 }
 
-.layers-input-card,
-.layers-control-card,
+.layers-panel {
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+}
+
 .layers-diagram-card {
-  max-width: 980px;
+  max-width: 1680px;
   width: 100%;
   margin: 0 auto;
 }
+
+/* ===========================================================
+   折りたたみパネル(入力・操作)
+   =========================================================== */
+
+.layers-panel__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  list-style: none;
+  cursor: pointer;
+  padding: clamp(1rem, 3vw, 1.5rem) clamp(1.4rem, 4vw, 2.4rem);
+  user-select: none;
+}
+
+.layers-panel__summary::-webkit-details-marker { display: none; }
+.layers-panel__summary::marker { content: ""; }
+
+.layers-panel__summary::after {
+  content: "▸ 開く";
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
+.layers-panel[open] .layers-panel__summary::after { content: "▾ 閉じる"; }
+
+.layers-panel__body {
+  padding: 0 clamp(1.4rem, 4vw, 2.4rem) clamp(1.4rem, 4vw, 2.4rem);
+}
+
+.layers-panel__body h2 { margin-top: 0; }
 
 /* ===========================================================
    操作パネル
@@ -39,7 +79,7 @@
    =========================================================== */
 .layers-diagram-heads {
   display: grid;
-  grid-template-columns: 1fr 64px 1fr;
+  grid-template-columns: 1fr 100px 1fr;
   margin-bottom: 0.6rem;
 }
 
@@ -53,7 +93,7 @@
 
 .layers-diagram {
   display: grid;
-  grid-template-columns: 1fr 64px 1fr;
+  grid-template-columns: 1fr 100px 1fr;
   gap: 0.6rem 0;
 }
 
@@ -63,15 +103,38 @@
   border-radius: 6px;
   padding: 0.8rem 0.9rem;
   transition: border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
-  min-height: 92px;
+  min-height: 78px;
 }
 
-.layer-cell[data-row$="physical"] { min-height: 78px; }
+/* 1層(ネットワークインターフェース層)は、パケットが実際に移動する段なので
+   他の段より広く高さを取り、動きを見やすくする */
+.layer-cell--physical { min-height: 190px; }
+
+/* ===========================================================
+   各段の説明文(クリックで見る)
+   =========================================================== */
+.layers-role-details { margin: 0.1rem 0 0.5rem; }
+
+.layers-role-details summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--accent-teal-dark);
+  font-family: var(--font-data);
+}
+
+.layers-role-details summary::-webkit-details-marker { display: none; }
+.layers-role-details summary::marker { content: ""; }
+.layers-role-details summary::before { content: "▸"; }
+.layers-role-details[open] summary::before { content: "▾"; }
 
 .layers-role {
   font-size: 0.8rem;
   color: var(--ink-soft);
-  margin: 0.15rem 0 0.5rem;
+  margin: 0.3rem 0 0;
 }
 
 .layers-packets {
@@ -107,7 +170,7 @@
 }
 
 .layer-gutter--track { padding: 0 4px; }
-.layer-gutter--track .transit__track { width: 100%; height: 78px; }
+.layer-gutter--track .transit__track { width: 100%; height: 190px; }
 
 /* パケットチップの状態違い(全体図用の小さめ表示) */
 .layers-packets .packet-chip {
@@ -122,8 +185,8 @@
 @media (max-width: 720px) {
   .layers-diagram,
   .layers-diagram-heads {
-    grid-template-columns: 1fr 40px 1fr;
+    grid-template-columns: 1fr 56px 1fr;
   }
-  .layer-gutter--track .transit__track { height: 60px; }
-  .layers-role { display: none; }
+  .layer-cell--physical { min-height: 150px; }
+  .layer-gutter--track .transit__track { height: 150px; }
 }

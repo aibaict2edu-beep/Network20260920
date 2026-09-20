@@ -34,23 +34,23 @@
     </li>
     <li data-step="1">
       <span class="route__stamp">01</span><span class="route__label">手紙を書く</span>
-      <span class="route__layer" data-layer="app">層4</span>
+      <span class="route__layer" data-layer="app">4層</span>
     </li>
     <li data-step="2">
       <span class="route__stamp">02</span><span class="route__label">荷造り(分割)</span>
-      <span class="route__layer" data-layer="transport">層3</span>
+      <span class="route__layer" data-layer="transport">3層</span>
     </li>
     <li data-step="3">
       <span class="route__stamp">03</span><span class="route__label">荷札(ヘッダー)</span>
-      <span class="route__layer" data-layer="transport-network">層3→2</span>
+      <span class="route__layer" data-layer="transport-network">3層→2層</span>
     </li>
     <li data-step="4">
       <span class="route__stamp">04</span><span class="route__label">発送</span>
-      <span class="route__layer" data-layer="physical">層1</span>
+      <span class="route__layer" data-layer="physical">1層</span>
     </li>
     <li data-step="5">
       <span class="route__stamp">05</span><span class="route__label">受け取り</span>
-      <span class="route__layer" data-layer="all">層1→4</span>
+      <span class="route__layer" data-layer="all">1層→4層</span>
     </li>
     <li data-step="6">
       <span class="route__stamp">着</span><span class="route__label">まとめ</span>
@@ -64,22 +64,22 @@
     <p class="layer-guide__note">荷物は、内側から外側へ向かって4つの係を通っていくよ。</p>
     <ul id="layerGuideList" class="layer-guide__list">
       <li data-layer="app" class="layer-card layer-card--app">
-        <span class="layer-card__no">層4</span>
+        <span class="layer-card__no">4層</span>
         <span class="layer-card__name">アプリケーション層</span>
         <span class="layer-card__role">送りたい内容(手紙の中身)そのものを用意する</span>
       </li>
       <li data-layer="transport" class="layer-card layer-card--transport">
-        <span class="layer-card__no">層3</span>
+        <span class="layer-card__no">3層</span>
         <span class="layer-card__name">トランスポート層</span>
         <span class="layer-card__role">分割した荷物に通し番号をつけ、順序を保証する</span>
       </li>
       <li data-layer="network" class="layer-card layer-card--network">
-        <span class="layer-card__no">層2</span>
+        <span class="layer-card__no">2層</span>
         <span class="layer-card__name">インターネット層</span>
         <span class="layer-card__role">送信元・宛先のIPアドレスを荷札に書く</span>
       </li>
       <li data-layer="physical" class="layer-card layer-card--physical">
-        <span class="layer-card__no">層1</span>
+        <span class="layer-card__no">1層</span>
         <span class="layer-card__name">ネットワークインターフェース層</span>
         <span class="layer-card__role">荷札付きの荷物を電気信号・電波として実際に運ぶ</span>
       </li>
@@ -113,7 +113,7 @@
   <!-- STEP 1 : 入力 -->
   <section class="step" data-step="1" hidden>
     <div class="card">
-      <p class="card__eyebrow">窓口 01 <span class="layer-pill layer-pill--app">層4 アプリケーション層</span></p>
+      <p class="card__eyebrow">窓口 01 <span class="layer-pill layer-pill--app">4層 アプリケーション層</span></p>
       <h2>送りたい手紙を書こう</h2>
       <p>短い文章を入力してね。この文章がこのあと分割されていくよ。</p>
       <label for="messageInput" class="field-label">送りたい内容</label>
@@ -129,7 +129,7 @@
   <!-- STEP 2 : 分割 -->
   <section class="step" data-step="2" hidden>
     <div class="card">
-      <p class="card__eyebrow">窓口 02 <span class="layer-pill layer-pill--transport">層3 トランスポート層</span></p>
+      <p class="card__eyebrow">窓口 02 <span class="layer-pill layer-pill--transport">3層 トランスポート層</span></p>
       <h2>荷造り ― データを分割する</h2>
       <p>
         通信できる回線にも、一度に運べる量に限りがある。だから元のデータは
@@ -155,7 +155,7 @@
   <!-- STEP 3 : ヘッダー付与 -->
   <section class="step" data-step="3" hidden>
     <div class="card">
-      <p class="card__eyebrow">窓口 03 <span id="step3LayerBadge" class="layer-pill layer-pill--transport">層3 トランスポート層</span></p>
+      <p class="card__eyebrow">窓口 03 <span id="step3LayerBadge" class="layer-pill layer-pill--transport">3層 トランスポート層</span></p>
       <h2>荷札 ― ヘッダーをつける</h2>
       <p>
         それぞれの荷物に、内側から外側へ順番に荷札(ヘッダー)を重ねていくよ。
@@ -198,7 +198,7 @@
   <!-- STEP 4 : 送信 -->
   <section class="step" data-step="4" hidden>
     <div class="card">
-      <p class="card__eyebrow">窓口 04 <span class="layer-pill layer-pill--physical">層1 ネットワークインターフェース層</span></p>
+      <p class="card__eyebrow">窓口 04 <span class="layer-pill layer-pill--physical">1層 ネットワークインターフェース層</span></p>
       <h2>発送 ― ネットワークへ送り出す</h2>
       <p>
         荷札のついた荷物は、ネットワークインターフェース層によって電気信号や電波として
@@ -239,7 +239,7 @@
   <!-- STEP 5 : 受信・復元 -->
   <section class="step" data-step="5" hidden>
     <div class="card">
-      <p class="card__eyebrow">窓口 05 <span class="layer-pill layer-pill--all">層1→層4 を逆にたどる</span></p>
+      <p class="card__eyebrow">窓口 05 <span class="layer-pill layer-pill--all">1層→4層 を逆にたどる</span></p>
       <h2>受け取り ― 荷札をはがして組み立てる</h2>
       <p>
         届いた荷物は、送られてきた順とは限らない。荷札を外側からはがして中身を確かめ、
@@ -250,22 +250,22 @@
       <ol class="layer-flow">
         <li class="layer-flow__item" data-layer="physical">
           <span class="layer-flow__no">①</span>
-          <span class="layer-pill layer-pill--physical">層1 ネットワークインターフェース層</span>
+          <span class="layer-pill layer-pill--physical">1層 ネットワークインターフェース層</span>
           <span class="layer-flow__desc">電気信号・電波を受信する</span>
         </li>
         <li class="layer-flow__item" data-layer="network">
           <span class="layer-flow__no">②</span>
-          <span class="layer-pill layer-pill--network">層2 インターネット層</span>
+          <span class="layer-pill layer-pill--network">2層 インターネット層</span>
           <span class="layer-flow__desc">荷札をはがしてIPアドレスを確認する(自分宛か確かめる)</span>
         </li>
         <li class="layer-flow__item" data-layer="transport">
           <span class="layer-flow__no">③</span>
-          <span class="layer-pill layer-pill--transport">層3 トランスポート層</span>
+          <span class="layer-pill layer-pill--transport">3層 トランスポート層</span>
           <span class="layer-flow__desc">荷札をはがして通し番号を確認し、正しい順に並べ替える</span>
         </li>
         <li class="layer-flow__item" data-layer="app">
           <span class="layer-flow__no">④</span>
-          <span class="layer-pill layer-pill--app">層4 アプリケーション層</span>
+          <span class="layer-pill layer-pill--app">4層 アプリケーション層</span>
           <span class="layer-flow__desc">中身のデータを受け取る</span>
         </li>
       </ol>
@@ -281,7 +281,7 @@
       </div>
       <p class="hint">
         「通し番号順に並べ替える」のは
-        <span class="layer-pill layer-pill--transport">層3 トランスポート層</span>
+        <span class="layer-pill layer-pill--transport">3層 トランスポート層</span>
         の仕事だよ。
       </p>
 
@@ -308,10 +308,10 @@
           <tr><th>層</th><th>名前</th><th>この体験での役割</th></tr>
         </thead>
         <tbody>
-          <tr><td>層4</td><td>アプリケーション層</td><td>送りたい内容そのものを用意する</td></tr>
-          <tr><td>層3</td><td>トランスポート層</td><td>分割した荷物に通し番号をつけ、順序を保証する</td></tr>
-          <tr><td>層2</td><td>インターネット層</td><td>送信元・宛先のIPアドレスを荷札に書く</td></tr>
-          <tr><td>層1</td><td>ネットワークインターフェース層</td><td>荷札付きの荷物を電気信号・電波として実際に運ぶ</td></tr>
+          <tr><td>4層</td><td>アプリケーション層</td><td>送りたい内容そのものを用意する</td></tr>
+          <tr><td>3層</td><td>トランスポート層</td><td>分割した荷物に通し番号をつけ、順序を保証する</td></tr>
+          <tr><td>2層</td><td>インターネット層</td><td>送信元・宛先のIPアドレスを荷札に書く</td></tr>
+          <tr><td>1層</td><td>ネットワークインターフェース層</td><td>荷札付きの荷物を電気信号・電波として実際に運ぶ</td></tr>
         </tbody>
       </table>
 
