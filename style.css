@@ -372,6 +372,18 @@ input[type="range"] {
   color: var(--ink-soft);
 }
 .card .ghost-btn { color: var(--ink-soft); }
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+a.ghost-btn {
+  display: inline-block;
+  text-decoration: none;
+}
+
 .app-header .ghost-btn { color: var(--text-light-dim); }
 .ghost-btn:hover { color: var(--ink); border-color: var(--ink); }
 

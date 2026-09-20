@@ -1,0 +1,129 @@
+/* layers.css は style.css のトークン・部品(layer-pill, packet-chip,
+   transit__track, envelope, card, ボタン等)を前提に、
+   4層の全体図(layers.html)に固有のレイアウトだけを追加する。 */
+
+.layers-main {
+  padding: 0.5rem clamp(1rem, 4vw, 3rem) 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.layers-input-card,
+.layers-control-card,
+.layers-diagram-card {
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ===========================================================
+   操作パネル
+   =========================================================== */
+.layers-current {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  background: #fffdf6;
+  border: 1.5px dashed var(--ink-soft);
+  border-radius: 4px;
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 1rem;
+}
+
+#currentDesc { font-size: 0.92rem; }
+
+/* ===========================================================
+   4層の図(グリッド)
+   =========================================================== */
+.layers-diagram-heads {
+  display: grid;
+  grid-template-columns: 1fr 64px 1fr;
+  margin-bottom: 0.6rem;
+}
+
+.layers-diagram-heads__label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.layers-diagram-heads__label:last-child { text-align: right; }
+
+.layers-diagram {
+  display: grid;
+  grid-template-columns: 1fr 64px 1fr;
+  gap: 0.6rem 0;
+}
+
+.layer-cell {
+  background: #fffdf6;
+  border: 2px solid rgba(35, 32, 26, 0.15);
+  border-radius: 6px;
+  padding: 0.8rem 0.9rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+  min-height: 92px;
+}
+
+.layer-cell[data-row$="physical"] { min-height: 78px; }
+
+.layers-role {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin: 0.15rem 0 0.5rem;
+}
+
+.layers-packets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.layers-packets:empty::after {
+  content: "―";
+  color: var(--ink-soft);
+  opacity: 0.5;
+  font-family: var(--font-data);
+  font-size: 0.85rem;
+}
+
+/* 到達していない段 */
+.layer-cell--pending { opacity: 0.4; }
+
+/* いま進行中の段 */
+.layer-cell--active {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 3px rgba(210, 164, 76, 0.28);
+}
+
+/* すでに通過した段 */
+.layer-cell--done { opacity: 0.85; }
+
+.layer-gutter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.layer-gutter--track { padding: 0 4px; }
+.layer-gutter--track .transit__track { width: 100%; height: 78px; }
+
+/* パケットチップの状態違い(全体図用の小さめ表示) */
+.layers-packets .packet-chip {
+  font-size: 0.78rem;
+  min-width: 3rem;
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+}
+
+.layers-packets .packet-chip__no { margin-bottom: 0.1rem; }
+
+@media (max-width: 720px) {
+  .layers-diagram,
+  .layers-diagram-heads {
+    grid-template-columns: 1fr 40px 1fr;
+  }
+  .layer-gutter--track .transit__track { height: 60px; }
+  .layers-role { display: none; }
+}

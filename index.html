@@ -19,9 +19,12 @@
       <p>通信のプロトコルと階層を、送り状を書きながら体験する</p>
     </div>
   </div>
-  <button id="layerGuideToggle" class="ghost-btn" aria-expanded="false" aria-controls="layerGuide">
-    階層早見表
-  </button>
+  <div class="app-header__actions">
+    <button id="layerGuideToggle" class="ghost-btn" aria-expanded="false" aria-controls="layerGuide">
+      階層早見表
+    </button>
+    <a class="ghost-btn" href="layers.html">全体図(4層図)を見る →</a>
+  </div>
 </header>
 
 <nav class="route" aria-label="学習の手順">
@@ -63,22 +66,22 @@
       <li data-layer="app" class="layer-card layer-card--app">
         <span class="layer-card__no">層4</span>
         <span class="layer-card__name">アプリケーション層</span>
-        <span class="layer-card__role">アプリケーション間のやり取り（送りたいデータそのものを用意する）</span>
+        <span class="layer-card__role">送りたい内容(手紙の中身)そのものを用意する</span>
       </li>
       <li data-layer="transport" class="layer-card layer-card--transport">
         <span class="layer-card__no">層3</span>
         <span class="layer-card__name">トランスポート層</span>
-        <span class="layer-card__role">通信の制御、エラー検出・訂正（分割した荷物に通し番号をつけ、順序を保証する</span>
+        <span class="layer-card__role">分割した荷物に通し番号をつけ、順序を保証する</span>
       </li>
       <li data-layer="network" class="layer-card layer-card--network">
         <span class="layer-card__no">層2</span>
         <span class="layer-card__name">インターネット層</span>
-        <span class="layer-card__role">IPアドレスの割り当て（送信元・宛先のIPアドレスを荷札に書く）、経路の選択</span>
+        <span class="layer-card__role">送信元・宛先のIPアドレスを荷札に書く</span>
       </li>
       <li data-layer="physical" class="layer-card layer-card--physical">
         <span class="layer-card__no">層1</span>
         <span class="layer-card__name">ネットワークインターフェース層</span>
-        <span class="layer-card__role">物理的な接続、機器感のやり取り（荷札付きの荷物を電気信号・電波として実際に運ぶ）</span>
+        <span class="layer-card__role">荷札付きの荷物を電気信号・電波として実際に運ぶ</span>
       </li>
     </ul>
     <button class="ghost-btn layer-guide__close" id="layerGuideClose">閉じる</button>
