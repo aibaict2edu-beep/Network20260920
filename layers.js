@@ -252,6 +252,19 @@ function setBusy(busy) {
   autoBtn.disabled = state.stage >= 8 && !autoPlayActive;
 }
 
+function scrollActiveRowIntoView() {
+  let target;
+  if (state.stage === 4) {
+    target = document.querySelector(".layer-gutter--track");
+  } else {
+    const def = STAGES[state.stage];
+    target = def && document.querySelector(`.layer-cell[data-row="${def.key}"]`);
+  }
+  if (target && target.scrollIntoView) {
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
 function advance(onDone) {
   if (state.stage >= 8) {
     onDone && onDone();
@@ -263,9 +276,11 @@ function advance(onDone) {
     // これから伝送(1層どうしの経路)へ入る
     state.stage = 4;
     renderAllCells();
+    scrollActiveRowIntoView();
     runCrossing(() => {
       state.stage = 5;
       renderAllCells();
+      scrollActiveRowIntoView();
       onDone && onDone();
     });
     return;
@@ -273,6 +288,7 @@ function advance(onDone) {
 
   state.stage = nextIndex;
   renderAllCells();
+  scrollActiveRowIntoView();
   onDone && onDone();
 }
 

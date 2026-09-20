@@ -123,7 +123,7 @@
    =========================================================== */
 .layers-diagram-heads {
   display: grid;
-  grid-template-columns: 1fr 100px 1fr;
+  grid-template-columns: 1fr 180px 1fr;
   margin-bottom: 0.4rem;
 }
 
@@ -137,7 +137,7 @@
 
 .layers-diagram {
   display: grid;
-  grid-template-columns: 1fr 100px 1fr;
+  grid-template-columns: 1fr 180px 1fr;
   gap: 0.35rem 0;
 }
 
@@ -198,6 +198,13 @@
 .layer-gutter--track { padding: 0 4px; }
 .layer-gutter--track .transit__track { width: 100%; height: 190px; }
 
+/* ② 自動スクロール時、固定の操作バー(下)に隠れないよう余白を確保 */
+.layer-cell,
+.layer-gutter--track {
+  scroll-margin-top: 90px;
+  scroll-margin-bottom: 140px;
+}
+
 /* ===========================================================
    ⑥⑦ パケットのチップ ― 実際の分割内容と、層ごとの処理を両方表示
    =========================================================== */
@@ -238,7 +245,7 @@
 @media (max-width: 720px) {
   .layers-diagram,
   .layers-diagram-heads {
-    grid-template-columns: 1fr 56px 1fr;
+    grid-template-columns: 1fr 100px 1fr;
   }
   .layer-cell--physical { min-height: 150px; }
   .layer-gutter--track .transit__track { height: 150px; }
