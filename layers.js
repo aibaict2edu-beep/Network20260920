@@ -96,23 +96,29 @@ function packetOrderForRow(rowKey) {
 }
 
 function bodyForRow(rowKey, packet) {
+  const dataHtml = `<div class="layers-chip-data">「${escapeHtml(packet.data) || "(空)"}」</div>`;
+  const tag = tagForRow(rowKey);
+  return tag ? `${dataHtml}<div class="layers-chip-tag">${tag}</div>` : dataHtml;
+}
+
+function tagForRow(rowKey) {
   switch (rowKey) {
     case "send-app":
-      return `「${escapeHtml(packet.data) || "(空)"}」`;
+      return "";
     case "send-transport":
-      return "通し番号を追加";
+      return "＋通し番号";
     case "send-network":
-      return `IP: ${escapeHtml(state.srcIp)} → ${escapeHtml(state.dstIp)}`;
+      return `＋IP ${escapeHtml(state.srcIp)}→${escapeHtml(state.dstIp)}`;
     case "send-physical":
-      return "📶 信号化して送信準備完了";
+      return "📶 信号化";
     case "receive-physical":
-      return "📶 信号を受信(未開封)";
+      return "📶 受信(未確認)";
     case "receive-network":
-      return "宛先IPを確認 ✓";
+      return "IP確認 ✓";
     case "receive-transport":
-      return "通し番号を確認して並べ替え ✓";
+      return "通し番号確認・並べ替え ✓";
     case "receive-app":
-      return `「${escapeHtml(packet.data) || "(空)"}」`;
+      return "";
     default:
       return "";
   }
@@ -149,6 +155,28 @@ function renderAllCells() {
   });
   updateCurrentCaption();
   updateFinalResult();
+  updateOrderSummary();
+}
+
+function updateOrderSummary() {
+  const sentLine = document.getElementById("sentOrderLine");
+  const sentText = document.getElementById("sentOrderText");
+  const arrivedLine = document.getElementById("arrivedOrderLine");
+  const arrivedText = document.getElementById("arrivedOrderText");
+
+  if (state.stage >= 3 && state.packets.length > 0) {
+    sentLine.hidden = false;
+    sentText.textContent = state.packets.map((p) => `#${p.seq}`).join(" → ");
+  } else {
+    sentLine.hidden = true;
+  }
+
+  if (state.stage >= 5 && state.arrivalOrder.length > 0) {
+    arrivedLine.hidden = false;
+    arrivedText.textContent = state.arrivalOrder.map((seq) => `#${seq}`).join(" → ");
+  } else {
+    arrivedLine.hidden = true;
+  }
 }
 
 function updateCurrentCaption() {
@@ -320,6 +348,8 @@ function applyInputs() {
   state.dstIp = dstInput.value;
   buildPackets();
   resetDiagram();
+  const inputPanel = document.getElementById("inputPanel");
+  if (inputPanel) inputPanel.open = false;
 }
 
 applyBtn.addEventListener("click", applyInputs);

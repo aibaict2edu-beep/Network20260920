@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="layers.css">
 </head>
-<body>
+<body class="layers-page">
 
 <header class="app-header">
   <div class="app-header__title">
@@ -25,7 +25,7 @@
 
 <main class="layers-main">
 
-  <!-- 入力パネル(折りたたみ式) -->
+  <!-- 入力パネル(折りたたみ式・初期は閉じている) -->
   <details class="card layers-panel" id="inputPanel">
     <summary class="layers-panel__summary">
       <span class="card__eyebrow" style="margin:0;">この図で送る内容</span>
@@ -61,25 +61,6 @@
       <div class="step-nav">
         <button class="primary-btn" id="applyBtn">この内容ではじめから表示する</button>
       </div>
-    </div>
-  </details>
-
-  <!-- 操作パネル(折りたたみ式) -->
-  <details class="card layers-panel" id="controlPanel">
-    <summary class="layers-panel__summary">
-      <span class="card__eyebrow" style="margin:0;">操作</span>
-    </summary>
-    <div class="layers-panel__body">
-      <div class="layers-current" id="currentCaption">
-        <span class="layer-pill layer-pill--app" id="currentPill">4層 アプリケーション層</span>
-        <span id="currentDesc">送りたい内容(手紙の中身)を用意した状態です。</span>
-      </div>
-      <div class="step-nav">
-        <button class="secondary-btn" id="nextBtn">次の段階へ →</button>
-        <button class="secondary-btn" id="autoBtn">自動再生 ▶</button>
-        <button class="ghost-btn" id="resetBtn">はじめから</button>
-      </div>
-      <p class="hint">「次の段階へ」で1段階ずつ、「自動再生」で最後まで自動的に進みます。</p>
     </div>
   </details>
 
@@ -152,6 +133,12 @@
         <div class="layers-packets" id="cell-receive-physical"></div>
       </div>
 
+      <!-- 送信順・到着順の一覧(1層の伝送経路の下にまとめて表示) -->
+      <div class="layers-order-summary" id="orderSummary">
+        <p class="hint" id="sentOrderLine" hidden>送信順: <span id="sentOrderText"></span></p>
+        <p class="hint" id="arrivedOrderLine" hidden>到着順: <span id="arrivedOrderText"></span></p>
+      </div>
+
     </div>
   </section>
 
@@ -160,6 +147,21 @@
 <footer class="app-footer">
   <p>高校 情報 ― 通信のプロトコルと階層 学習教材(全体図)</p>
 </footer>
+
+<!-- 操作パネル(画面下部に常時固定表示) -->
+<div class="layers-controlbar" id="controlPanel">
+  <div class="layers-controlbar__inner">
+    <div class="layers-current" id="currentCaption">
+      <span class="layer-pill layer-pill--app" id="currentPill">4層 アプリケーション層</span>
+      <span id="currentDesc">送りたい内容(手紙の中身)を用意した状態です。</span>
+    </div>
+    <div class="step-nav">
+      <button class="secondary-btn" id="nextBtn">次の段階へ →</button>
+      <button class="secondary-btn" id="autoBtn">自動再生 ▶</button>
+      <button class="ghost-btn" id="resetBtn">はじめから</button>
+    </div>
+  </div>
+</div>
 
 <script src="layers.js"></script>
 </body>
