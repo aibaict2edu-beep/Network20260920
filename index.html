@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4層でみる送受信の全体図 ― 通信のプロトコルと階層</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DotGothic16&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="layers.css">
+</head>
+<body class="layers-page">
+
+<header class="app-header">
+  <div class="app-header__title">
+    <span class="app-header__mark">〒</span>
+    <div>
+      <h1>4層でみる送受信の全体図</h1>
+      <p>送信側と受信側、4つの層を1枚の図で見比べる</p>
+    </div>
+  </div>
+  <nav class="page-tabs" aria-label="ページ切り替え">
+    <a class="page-tabs__item" href="steps.html">ステップ版</a>
+    <span class="page-tabs__item is-active" aria-current="page">全体図(4層図)</span>
+  </nav>
+</header>
+
+<main class="layers-main">
+
+  <!-- 入力パネル(折りたたみ式・初期は閉じている) -->
+  <details class="card layers-panel" id="inputPanel" open>
+    <summary class="layers-panel__summary">
+      <span class="card__eyebrow" style="margin:0;">この図で送る内容</span>
+    </summary>
+    <div class="layers-panel__body">
+      <h2>手紙とアドレスを入力しよう</h2>
+
+      <label for="msgInput" class="field-label">送りたい内容</label>
+      <textarea id="msgInput" maxlength="120" rows="2" placeholder="例:こんにちは。今日の授業、楽しみにしています。">こんにちは。今日の授業、楽しみにしています。</textarea>
+      <p class="hint" id="msgCount">0 文字</p>
+
+      <label for="chunkInput" class="field-label">
+        1つの荷物に入れる文字数:<output id="chunkVal">6</output> 文字
+      </label>
+      <input type="range" id="chunkInput" min="2" max="12" value="6">
+
+      <div class="ip-fields">
+        <div>
+          <label for="srcInput" class="field-label">送信元IPアドレス</label>
+          <input type="text" id="srcInput" value="192.168.1.10">
+        </div>
+        <div>
+          <label for="dstInput" class="field-label">宛先IPアドレス</label>
+          <input type="text" id="dstInput" value="192.168.1.20">
+        </div>
+      </div>
+
+      <label class="toggle">
+        <input type="checkbox" id="shuffleInput" checked>
+        <span>実際の通信のように、届く順番をバラバラにする</span>
+      </label>
+
+      <div class="step-nav">
+        <button class="primary-btn" id="applyBtn">この内容ではじめから表示する</button>
+      </div>
+    </div>
+  </details>
+
+  <!-- 4層の図 -->
+  <section class="card layers-diagram-card">
+    <div class="layers-diagram-heads">
+      <span class="layers-diagram-heads__label">送信側</span>
+      <span></span>
+      <span class="layers-diagram-heads__label">受信側</span>
+    </div>
+
+    <div class="layers-diagram" id="layersDiagram">
+
+      <!-- 4層 アプリケーション層 -->
+      <div class="layer-cell" data-row="send-app">
+        <span class="layer-pill layer-pill--app">4層 アプリケーション層</span>
+        <p class="layers-role">送りたい内容そのものを用意する</p>
+        <div class="layers-packets" id="cell-send-app"></div>
+      </div>
+      <div class="layer-gutter"></div>
+      <div class="layer-cell" data-row="receive-app">
+        <span class="layer-pill layer-pill--app">4層 アプリケーション層</span>
+        <p class="layers-role">中身のデータを受け取る</p>
+        <div class="layers-packets" id="cell-receive-app"></div>
+        <div id="finalResult" class="reassembled" hidden>
+          <p class="field-label">組み立てられた内容</p>
+          <p id="finalText" class="reassembled__text"></p>
+          <p id="finalCheck" class="reassembled__check"></p>
+        </div>
+      </div>
+
+      <!-- 3層 トランスポート層 -->
+      <div class="layer-cell" data-row="send-transport">
+        <span class="layer-pill layer-pill--transport">3層 トランスポート層</span>
+        <p class="layers-role">分割した荷物に通し番号をつける</p>
+        <div class="layers-packets" id="cell-send-transport"></div>
+      </div>
+      <div class="layer-gutter"></div>
+      <div class="layer-cell" data-row="receive-transport">
+        <span class="layer-pill layer-pill--transport">3層 トランスポート層</span>
+        <p class="layers-role">通し番号を確認し、正しい順に並べ替える</p>
+        <div class="layers-packets" id="cell-receive-transport"></div>
+      </div>
+
+      <!-- 2層 インターネット層 -->
+      <div class="layer-cell" data-row="send-network">
+        <span class="layer-pill layer-pill--network">2層 インターネット層</span>
+        <p class="layers-role">送信元・宛先のIPアドレスを荷札に書く</p>
+        <div class="layers-packets" id="cell-send-network"></div>
+      </div>
+      <div class="layer-gutter"></div>
+      <div class="layer-cell" data-row="receive-network">
+        <span class="layer-pill layer-pill--network">2層 インターネット層</span>
+        <p class="layers-role">IPアドレスを確認する(自分宛か確かめる)</p>
+        <div class="layers-packets" id="cell-receive-network"></div>
+      </div>
+
+      <!-- 1層 ネットワークインターフェース層(伝送経路) -->
+      <div class="layer-cell layer-cell--physical" data-row="send-physical">
+        <span class="layer-pill layer-pill--physical">1層 ネットワークインターフェース層</span>
+        <p class="layers-role">電気信号・電波として送り出す</p>
+        <div class="layers-packets" id="cell-send-physical"></div>
+        <p class="hint layers-order-line" id="sentOrderLine" hidden>送信順: <span id="sentOrderText"></span></p>
+      </div>
+      <div class="layer-gutter layer-gutter--track">
+        <div class="transit__track" id="layersTrack"></div>
+      </div>
+      <div class="layer-cell layer-cell--physical" data-row="receive-physical">
+        <span class="layer-pill layer-pill--physical">1層 ネットワークインターフェース層</span>
+        <p class="layers-role">電気信号・電波を受信する</p>
+        <div class="layers-packets" id="cell-receive-physical"></div>
+        <p class="hint layers-order-line" id="arrivedOrderLine" hidden>到着順: <span id="arrivedOrderText"></span></p>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <p>高校 情報 ― 通信のプロトコルと階層 学習教材(全体図)</p>
+</footer>
+
+<!-- 操作パネル(画面下部に常時固定表示) -->
+<div class="layers-controlbar" id="controlPanel">
+  <div class="layers-controlbar__inner">
+    <div class="layers-current" id="currentCaption">
+      <span class="layer-pill layer-pill--app" id="currentPill">4層 アプリケーション層</span>
+      <span id="currentDesc">送りたい内容(手紙の中身)を用意した状態です。</span>
+    </div>
+    <div class="step-nav">
+      <button class="secondary-btn" id="nextBtn">次の段階へ →</button>
+      <button class="secondary-btn" id="autoBtn">自動再生 ▶</button>
+      <button class="ghost-btn" id="resetBtn">はじめから</button>
+    </div>
+  </div>
+</div>
+
+<script src="layers.js"></script>
+</body>
+</html>
