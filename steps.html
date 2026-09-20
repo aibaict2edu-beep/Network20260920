@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>荷物が届くまで ― 通信のプロトコルと階層</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DotGothic16&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-header__title">
+    <span class="app-header__mark">〒</span>
+    <div>
+      <h1>荷物が届くまで</h1>
+      <p>通信のプロトコルと階層を、送り状を書きながら体験する</p>
+    </div>
+  </div>
+  <div class="app-header__actions">
+    <nav class="page-tabs" aria-label="ページ切り替え">
+      <span class="page-tabs__item is-active" aria-current="page">ステップ版</span>
+      <a class="page-tabs__item" href="index.html">全体図(4層図)</a>
+    </nav>
+    <button id="layerGuideToggle" class="ghost-btn" aria-expanded="false" aria-controls="layerGuide">
+      階層早見表
+    </button>
+  </div>
+</header>
+
+<nav class="route" aria-label="学習の手順">
+  <ol id="routeList">
+    <li data-step="0">
+      <span class="route__stamp">受付</span><span class="route__label">はじめに</span>
+    </li>
+    <li data-step="1">
+      <span class="route__stamp">01</span><span class="route__label">手紙を書く</span>
+      <span class="route__layer" data-layer="app">4層</span>
+    </li>
+    <li data-step="2">
+      <span class="route__stamp">02</span><span class="route__label">荷造り(分割)</span>
+      <span class="route__layer" data-layer="transport">3層</span>
+    </li>
+    <li data-step="3">
+      <span class="route__stamp">03</span><span class="route__label">荷札(ヘッダー)</span>
+      <span class="route__layer" data-layer="transport-network">3層→2層</span>
+    </li>
+    <li data-step="4">
+      <span class="route__stamp">04</span><span class="route__label">発送</span>
+      <span class="route__layer" data-layer="physical">1層</span>
+    </li>
+    <li data-step="5">
+      <span class="route__stamp">05</span><span class="route__label">受け取り</span>
+      <span class="route__layer" data-layer="all">1層→4層</span>
+    </li>
+    <li data-step="6">
+      <span class="route__stamp">着</span><span class="route__label">まとめ</span>
+    </li>
+  </ol>
+</nav>
+
+<aside id="layerGuide" class="layer-guide" hidden>
+  <div class="layer-guide__inner">
+    <h2>階層早見表</h2>
+    <p class="layer-guide__note">荷物は、内側から外側へ向かって4つの係を通っていくよ。</p>
+    <ul id="layerGuideList" class="layer-guide__list">
+      <li data-layer="app" class="layer-card layer-card--app">
+        <span class="layer-card__no">4層</span>
+        <span class="layer-card__name">アプリケーション層</span>
+        <span class="layer-card__role">送りたい内容(手紙の中身)そのものを用意する</span>
+      </li>
+      <li data-layer="transport" class="layer-card layer-card--transport">
+        <span class="layer-card__no">3層</span>
+        <span class="layer-card__name">トランスポート層</span>
+        <span class="layer-card__role">分割した荷物に通し番号をつけ、順序を保証する</span>
+      </li>
+      <li data-layer="network" class="layer-card layer-card--network">
+        <span class="layer-card__no">2層</span>
+        <span class="layer-card__name">インターネット層</span>
+        <span class="layer-card__role">送信元・宛先のIPアドレスを荷札に書く</span>
+      </li>
+      <li data-layer="physical" class="layer-card layer-card--physical">
+        <span class="layer-card__no">1層</span>
+        <span class="layer-card__name">ネットワークインターフェース層</span>
+        <span class="layer-card__role">荷札付きの荷物を電気信号・電波として実際に運ぶ</span>
+      </li>
+    </ul>
+    <button class="ghost-btn layer-guide__close" id="layerGuideClose">閉じる</button>
+  </div>
+</aside>
+
+<main id="app">
+
+  <!-- STEP 0 : イントロ -->
+  <section class="step" data-step="0">
+    <div class="card card--intro">
+      <p class="card__eyebrow">窓口 案内</p>
+      <h2>手紙は、そのままでは届かない</h2>
+      <p>
+        大きな荷物を送るとき、そのまま丸ごと1つでは運びにくい。だから小さく分けて、
+        それぞれに「宛先」と「何番目か」を書いた荷札をつけて送るよね。
+      </p>
+      <p>
+        コンピューター同士の通信も、実は同じしくみ。データを分割し、
+        <strong>荷札(ヘッダー)</strong>をつけて送り出し、受け取った側で組み立て直している。
+        このアプリでは、あなたが書いた文章がどうやって届くのかを、係の窓口を1つずつ回りながら体験してみよう。
+      </p>
+      <div class="step-nav">
+        <button class="primary-btn" data-goto="1">受付をはじめる →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 1 : 入力 -->
+  <section class="step" data-step="1" hidden>
+    <div class="card">
+      <p class="card__eyebrow">窓口 01 <span class="layer-pill layer-pill--app">4層 アプリケーション層</span></p>
+      <h2>送りたい手紙を書こう</h2>
+      <p>短い文章を入力してね。この文章がこのあと分割されていくよ。</p>
+      <label for="messageInput" class="field-label">送りたい内容</label>
+      <textarea id="messageInput" maxlength="120" rows="3" placeholder="例:こんにちは。今日の授業、楽しみにしています。"></textarea>
+      <p class="hint" id="charCount">0 文字</p>
+      <div class="step-nav">
+        <button class="ghost-btn" data-goto="0">← 戻る</button>
+        <button class="primary-btn" id="toStep2Btn">荷造りへ進む →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2 : 分割 -->
+  <section class="step" data-step="2" hidden>
+    <div class="card">
+      <p class="card__eyebrow">窓口 02 <span class="layer-pill layer-pill--transport">3層 トランスポート層</span></p>
+      <h2>荷造り ― データを分割する</h2>
+      <p>
+        通信できる回線にも、一度に運べる量に限りがある。だから元のデータは
+        いくつかの「パケット」という小包に分けて送られる。この「分割する」作業は
+        トランスポート層の仕事だよ。
+      </p>
+      <label for="chunkSize" class="field-label">
+        1つの荷物に入れる文字数:<output id="chunkSizeVal">6</output> 文字
+      </label>
+      <input type="range" id="chunkSize" min="2" max="12" value="6">
+      <p class="hint">数字を変えると、荷物の分け方が変わる様子を見てみよう。</p>
+
+      <div id="originalPreview" class="original-preview" aria-live="polite"></div>
+      <div id="packetGrid" class="packet-grid" aria-live="polite"></div>
+
+      <div class="step-nav">
+        <button class="ghost-btn" data-goto="1">← 戻る</button>
+        <button class="primary-btn" data-goto="3">荷札をつけに進む →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3 : ヘッダー付与 -->
+  <section class="step" data-step="3" hidden>
+    <div class="card">
+      <p class="card__eyebrow">窓口 03 <span id="step3LayerBadge" class="layer-pill layer-pill--transport">3層 トランスポート層</span></p>
+      <h2>荷札 ― ヘッダーをつける</h2>
+      <p>
+        それぞれの荷物に、内側から外側へ順番に荷札(ヘッダー)を重ねていくよ。
+        荷札をつける作業も、その荷札の種類によって担当する層が変わる。
+        まず<strong>トランスポート層</strong>が通し番号をつけ、次に<strong>インターネット層</strong>がIPアドレスをつける。
+      </p>
+
+      <div class="ip-fields">
+        <div>
+          <label for="srcIp" class="field-label">送信元IPアドレス(自分)</label>
+          <input type="text" id="srcIp" value="192.168.1.10">
+        </div>
+        <div>
+          <label for="dstIp" class="field-label">宛先IPアドレス(相手)</label>
+          <input type="text" id="dstIp" value="192.168.1.20">
+        </div>
+      </div>
+
+      <div class="build-demo">
+        <p class="field-label">まずは1つ目の荷物で、荷札の重ね方を確認しよう</p>
+        <div id="buildStage" class="build-stage"></div>
+        <div class="build-controls">
+          <button class="secondary-btn" id="wrapStepBtn">次の荷札をつける</button>
+          <span id="buildStatus" class="hint"></span>
+        </div>
+      </div>
+
+      <div id="allPacketsWrap" class="all-packets" hidden>
+        <p class="field-label">残りの荷物にも、同じルールで荷札がついたよ</p>
+        <div id="allPacketsGrid" class="packet-grid packet-grid--sealed"></div>
+      </div>
+
+      <div class="step-nav">
+        <button class="ghost-btn" data-goto="2">← 戻る</button>
+        <button class="primary-btn" id="toStep4Btn" disabled>発送窓口へ進む →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 4 : 送信 -->
+  <section class="step" data-step="4" hidden>
+    <div class="card">
+      <p class="card__eyebrow">窓口 04 <span class="layer-pill layer-pill--physical">1層 ネットワークインターフェース層</span></p>
+      <h2>発送 ― ネットワークへ送り出す</h2>
+      <p>
+        荷札のついた荷物は、ネットワークインターフェース層によって電気信号や電波として
+        ケーブルや無線に乗せられる。通り道は1本とは限らず、荷物ごとに届く速さが変わることもある。
+      </p>
+
+      <label class="toggle">
+        <input type="checkbox" id="shuffleToggle" checked>
+        <span>実際の通信のように、届く順番をバラバラにする</span>
+      </label>
+
+      <div class="transit">
+        <div class="transit__node transit__node--sender">
+          <span class="transit__label">送信側</span>
+          <span class="transit__ip" id="senderIpLabel">192.168.1.10</span>
+        </div>
+        <div class="transit__track" id="transitTrack"></div>
+        <div class="transit__node transit__node--receiver">
+          <span class="transit__label">受信側</span>
+          <span class="transit__ip" id="receiverIpLabel">192.168.1.20</span>
+        </div>
+      </div>
+
+      <p class="hint">受信側に届いた荷物は消えずに、そのままトラックの右端に残るよ。</p>
+      <div id="arrivalOrderBox" class="arrival-order" hidden>
+        <span class="field-label" style="margin:0;">到着した順番:</span>
+        <span id="arrivalOrderText" class="arrival-order__text"></span>
+      </div>
+
+      <div class="step-nav">
+        <button class="ghost-btn" data-goto="3">← 戻る</button>
+        <button class="secondary-btn" id="sendBtn">荷物を送り出す</button>
+        <button class="primary-btn" id="toStep5Btn" disabled>受け取り窓口へ進む →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 5 : 受信・復元 -->
+  <section class="step" data-step="5" hidden>
+    <div class="card">
+      <p class="card__eyebrow">窓口 05 <span class="layer-pill layer-pill--all">1層→4層 を逆にたどる</span></p>
+      <h2>受け取り ― 荷札をはがして組み立てる</h2>
+      <p>
+        届いた荷物は、送られてきた順とは限らない。荷札を外側からはがして中身を確かめ、
+        「通し番号」を見て正しい順番に並べ替えてから、最後に中身をつなげよう。
+        受け取る側は、送るときと<strong>逆の順番</strong>で層を1つずつ通っていくよ。
+      </p>
+
+      <ol class="layer-flow">
+        <li class="layer-flow__item" data-layer="physical">
+          <span class="layer-flow__no">①</span>
+          <span class="layer-pill layer-pill--physical">1層 ネットワークインターフェース層</span>
+          <span class="layer-flow__desc">電気信号・電波を受信する</span>
+        </li>
+        <li class="layer-flow__item" data-layer="network">
+          <span class="layer-flow__no">②</span>
+          <span class="layer-pill layer-pill--network">2層 インターネット層</span>
+          <span class="layer-flow__desc">荷札をはがしてIPアドレスを確認する(自分宛か確かめる)</span>
+        </li>
+        <li class="layer-flow__item" data-layer="transport">
+          <span class="layer-flow__no">③</span>
+          <span class="layer-pill layer-pill--transport">3層 トランスポート層</span>
+          <span class="layer-flow__desc">荷札をはがして通し番号を確認し、正しい順に並べ替える</span>
+        </li>
+        <li class="layer-flow__item" data-layer="app">
+          <span class="layer-flow__no">④</span>
+          <span class="layer-pill layer-pill--app">4層 アプリケーション層</span>
+          <span class="layer-flow__desc">中身のデータを受け取る</span>
+        </li>
+      </ol>
+
+      <p class="hint">荷物をクリックすると、荷札が1枚ずつはがれていくよ(②→③の順)。</p>
+
+      <div id="inboxGrid" class="packet-grid packet-grid--inbox"></div>
+
+      <div class="step-nav step-nav--wrap">
+        <button class="ghost-btn" data-goto="4">← 戻る</button>
+        <button class="secondary-btn" id="peelAllBtn">全部の荷札をはがす</button>
+        <button class="secondary-btn" id="sortBtn" disabled>通し番号順に並べ替える</button>
+      </div>
+      <p class="hint">
+        「通し番号順に並べ替える」のは
+        <span class="layer-pill layer-pill--transport">3層 トランスポート層</span>
+        の仕事だよ。
+      </p>
+
+      <div id="reassembled" class="reassembled" hidden>
+        <p class="field-label">組み立てられた内容</p>
+        <p id="reassembledText" class="reassembled__text"></p>
+        <p id="reassembledCheck" class="reassembled__check"></p>
+      </div>
+
+      <div class="step-nav">
+        <button class="primary-btn" id="toStep6Btn" disabled>まとめへ進む →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 6 : まとめ・クイズ -->
+  <section class="step" data-step="6" hidden>
+    <div class="card">
+      <p class="card__eyebrow">窓口 着</p>
+      <h2>まとめ ― 階層の役割をふりかえる</h2>
+
+      <table class="summary-table">
+        <thead>
+          <tr><th>層</th><th>名前</th><th>この体験での役割</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>4層</td><td>アプリケーション層</td><td>送りたい内容そのものを用意する</td></tr>
+          <tr><td>3層</td><td>トランスポート層</td><td>分割した荷物に通し番号をつけ、順序を保証する</td></tr>
+          <tr><td>2層</td><td>インターネット層</td><td>送信元・宛先のIPアドレスを荷札に書く</td></tr>
+          <tr><td>1層</td><td>ネットワークインターフェース層</td><td>荷札付きの荷物を電気信号・電波として実際に運ぶ</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="quiz-heading">確認クイズ</h3>
+      <div id="quiz" class="quiz"></div>
+      <p id="quizScore" class="hint"></p>
+
+      <div class="step-nav">
+        <button class="ghost-btn" data-goto="0" id="restartBtn">もう一度はじめから体験する</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <p>高校 情報 ― 通信のプロトコルと階層 学習教材</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
