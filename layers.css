@@ -142,6 +142,30 @@
 
 .layers-controlbar .step-nav { margin: 0; gap: 0.5rem; }
 
+/* 「はじめから」ボタン ― 通常はしっかりした背景色で他のボタンと区別する */
+.reset-btn {
+  border-radius: 4px;
+  padding: 0.65rem 1.3rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: 2px solid transparent;
+  background: var(--ink-soft);
+  color: #fff9ec;
+  transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+}
+
+.reset-btn:hover:not(:disabled) { background: var(--accent-stamp-dark); }
+.reset-btn:active:not(:disabled) { transform: translateY(1px); }
+
+/* 全段階が完了したときは、金色系で目立たせ、文字も変える */
+.reset-btn.is-complete {
+  background: var(--accent-gold);
+  color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(210, 164, 76, 0.35);
+}
+
+.reset-btn.is-complete:hover:not(:disabled) { background: #dfae52; }
+
 .layers-current {
   display: flex;
   align-items: center;

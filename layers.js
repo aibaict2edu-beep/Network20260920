@@ -224,6 +224,13 @@ function renderAllCells() {
   updateOrderSummary();
   checkForLoss();
   updateControlAvailability();
+  updateResetButtonState();
+}
+
+function updateResetButtonState() {
+  const complete = state.stage >= 8;
+  resetBtn.classList.toggle("is-complete", complete);
+  resetBtn.textContent = complete ? "はじめからやり直す" : "はじめから";
 }
 
 function updateOrderSummary() {
