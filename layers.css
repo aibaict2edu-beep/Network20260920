@@ -269,6 +269,14 @@
 /* すでに通過した段 */
 .layer-cell--done { opacity: 0.85; }
 
+/* 再送時、パケットが今どの層を通っているかを一時的に強調する */
+.layer-cell--retransmit-pulse {
+  border-color: var(--accent-stamp);
+  box-shadow: 0 0 0 3px rgba(193, 68, 60, 0.32);
+  opacity: 1;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
 .layer-gutter {
   display: flex;
   align-items: center;

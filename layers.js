@@ -465,9 +465,47 @@ autoBtn.addEventListener("click", () => {
 
 /* ===========================================================
    再送(トランスポート層が欠けを検知したあと、ボタンで実行)
+   送信側 3層→2層→1層→(経路)→受信側 1層→2層→3層 と、
+   実際に降りて・上がっていく様子を順番に見せる
    =========================================================== */
+function pulseCell(rowKey, duration) {
+  return new Promise((resolve) => {
+    const cell = document.querySelector(`.layer-cell[data-row="${rowKey}"]`);
+    if (cell) {
+      cell.classList.add("layer-cell--retransmit-pulse");
+      scrollElementIntoView(cell);
+    }
+    setTimeout(() => {
+      if (cell) cell.classList.remove("layer-cell--retransmit-pulse");
+      resolve();
+    }, duration);
+  });
+}
+
+function runCrossingAsync(packetsToSend, allowLoss) {
+  return new Promise((resolve) => {
+    runCrossing(packetsToSend, allowLoss, resolve);
+  });
+}
+
+async function playRetransmitJourney(missingPackets) {
+  // 送信側: 3層(トランスポート層) → 2層(インターネット層) → 1層(ネットワークインターフェース層)
+  await pulseCell("send-transport", 600);
+  await pulseCell("send-network", 600);
+  await pulseCell("send-physical", 600);
+
+  // 経路(1層どうしの伝送)。再送したパケットは必ず届く(2回目の紛失判定はしない)
+  scrollElementIntoView(document.querySelector(".layer-gutter--track"));
+  await runCrossingAsync(missingPackets, false);
+
+  // 受信側: 1層 → 2層(インターネット層) → 3層(トランスポート層)
+  await pulseCell("receive-physical", 600);
+  await pulseCell("receive-network", 600);
+  await pulseCell("receive-transport", 600);
+}
+
 if (retransmitBtn) {
-  retransmitBtn.addEventListener("click", () => {
+  retransmitBtn.addEventListener("click", async () => {
     if (state.retransmitting) return;
     const missingPackets = state.packets.filter((p) => !state.deliveredSeqs.has(p.seq));
     if (missingPackets.length === 0) return;
@@ -475,14 +513,11 @@ if (retransmitBtn) {
     state.retransmitting = true;
     retransmitBtn.disabled = true;
     retransmitBtn.textContent = "再送中…";
-    scrollElementIntoView(document.querySelector(".layer-gutter--track"));
 
-    // 再送したパケットは必ず届く(2回目の紛失判定はしない)
-    runCrossing(missingPackets, false, () => {
-      state.retransmitting = false;
-      renderAllCells();
-      scrollElementIntoView(document.querySelector('.layer-cell[data-row="receive-transport"]'));
-    });
+    await playRetransmitJourney(missingPackets);
+
+    state.retransmitting = false;
+    renderAllCells();
   });
 }
 
