@@ -8,11 +8,21 @@ const state = {
   chunkSize: 6,
   srcIp: "192.168.1.10",
   dstIp: "192.168.1.20",
-  packets: [],       // { seq, total, data }
-  stage: 0,          // 0..8 (STAGES のインデックス)
-  arrivalOrder: [],  // 伝送後、到着した順の seq 配列
+  packets: [],          // { seq, total, data }
+  stage: 0,             // 0..8 (STAGES のインデックス)
+  arrivalOrder: [],     // 実際に届いた順の seq 配列(再送分もこの末尾に追加される)
+  deliveredSeqs: new Set(), // これまでに届いた(再送を含む)seqの集合
   busy: false,
   autoTimer: null,
+
+  // 紛失シミュレーション設定
+  randomLossEnabled: false,
+  lossRate: 20,          // %
+  manualLossSeqs: new Set(), // 必ず届かないようにするseq
+
+  // 検知・再送
+  awaitingRetransmit: false,
+  retransmitting: false,
 };
 
 let autoPlayActive = false;
@@ -28,13 +38,13 @@ const STAGES = [
   { key: "send-physical",    pill: "physical",    label: "1層 ネットワークインターフェース層",
     desc: "ネットワークインターフェース層が、荷物を電気信号・電波に変えて送信の準備をしました。" },
   { key: "transit",          pill: "physical",    label: "1層 ネットワークインターフェース層(伝送中)",
-    desc: "電気信号・電波としてケーブルや無線の中を運ばれています。届く順番が入れ替わることもあります。" },
+    desc: "電気信号・電波としてケーブルや無線の中を運ばれています。途中で届かなくなることもあります。" },
   { key: "receive-physical", pill: "physical",    label: "1層 ネットワークインターフェース層",
     desc: "受信側が電気信号・電波を受け取りました。" },
   { key: "receive-network",  pill: "network",     label: "2層 インターネット層",
     desc: "インターネット層が、IPアドレスを確認して自分宛かどうか確かめました。" },
   { key: "receive-transport",pill: "transport",   label: "3層 トランスポート層",
-    desc: "トランスポート層が、通し番号を確認して正しい順番に並べ替えました。" },
+    desc: "トランスポート層が、通し番号を確認して正しい順番に並べ替えました。届いていない番号があれば、ここで検知します。" },
   { key: "receive-app",      pill: "app",         label: "4層 アプリケーション層",
     desc: "アプリケーション層が中身のデータを受け取り、元の内容が復元されました。" },
 ];
@@ -55,6 +65,12 @@ function splitMessage(msg, size) {
 function buildPackets() {
   const chunks = splitMessage(state.message, state.chunkSize);
   state.packets = chunks.map((c, i) => ({ seq: i + 1, total: chunks.length, data: c }));
+  // 分割数が変わったら、手動紛失指定のうち範囲外になった番号は取り除く
+  const validSeqs = new Set(state.packets.map((p) => p.seq));
+  state.manualLossSeqs.forEach((seq) => {
+    if (!validSeqs.has(seq)) state.manualLossSeqs.delete(seq);
+  });
+  renderLossPicker();
 }
 
 /* ===========================================================
@@ -69,6 +85,12 @@ const dstInput = document.getElementById("dstInput");
 const shuffleInput = document.getElementById("shuffleInput");
 const applyBtn = document.getElementById("applyBtn");
 
+const randomLossInput = document.getElementById("randomLossInput");
+const lossRateInput = document.getElementById("lossRateInput");
+const lossRateVal = document.getElementById("lossRateVal");
+const lossRateWrap = document.getElementById("lossRateWrap");
+const lossPicker = document.getElementById("lossPicker");
+
 const nextBtn = document.getElementById("nextBtn");
 const autoBtn = document.getElementById("autoBtn");
 const resetBtn = document.getElementById("resetBtn");
@@ -80,6 +102,47 @@ const finalText = document.getElementById("finalText");
 const finalCheck = document.getElementById("finalCheck");
 const layersTrack = document.getElementById("layersTrack");
 
+const lossAlert = document.getElementById("lossAlert");
+const lossAlertText = document.getElementById("lossAlertText");
+const retransmitBtn = document.getElementById("retransmitBtn");
+
+/* ===========================================================
+   入力パネル ― 紛失シミュレーションの設定
+   =========================================================== */
+function renderLossPicker() {
+  if (!lossPicker) return;
+  lossPicker.innerHTML = state.packets.map((p) => `
+    <label class="layers-loss-check">
+      <input type="checkbox" data-seq="${p.seq}" ${state.manualLossSeqs.has(p.seq) ? "checked" : ""}>
+      <span>#${p.seq}</span>
+    </label>
+  `).join("");
+}
+
+if (lossPicker) {
+  lossPicker.addEventListener("change", (e) => {
+    const target = e.target;
+    if (!target || !target.matches('input[type="checkbox"]')) return;
+    const seq = Number(target.dataset.seq);
+    if (target.checked) state.manualLossSeqs.add(seq);
+    else state.manualLossSeqs.delete(seq);
+  });
+}
+
+if (randomLossInput) {
+  randomLossInput.addEventListener("change", () => {
+    state.randomLossEnabled = randomLossInput.checked;
+    if (lossRateWrap) lossRateWrap.hidden = !state.randomLossEnabled;
+  });
+}
+
+if (lossRateInput) {
+  lossRateInput.addEventListener("input", () => {
+    state.lossRate = Number(lossRateInput.value);
+    if (lossRateVal) lossRateVal.textContent = state.lossRate;
+  });
+}
+
 /* ===========================================================
    行(層)の描画
    =========================================================== */
@@ -90,7 +153,10 @@ function packetOrderForRow(rowKey) {
       .filter(Boolean);
   }
   if (rowKey === "receive-transport" || rowKey === "receive-app") {
-    return [...state.packets].sort((a, b) => a.seq - b.seq);
+    // 届いていないパケットは、届くまでここには現れない
+    return state.packets
+      .filter((p) => state.deliveredSeqs.has(p.seq))
+      .sort((a, b) => a.seq - b.seq);
   }
   return state.packets; // send-* は常に元の通し番号順
 }
@@ -156,6 +222,8 @@ function renderAllCells() {
   updateCurrentCaption();
   updateFinalResult();
   updateOrderSummary();
+  checkForLoss();
+  updateControlAvailability();
 }
 
 function updateOrderSummary() {
@@ -203,19 +271,60 @@ function updateFinalResult() {
 }
 
 /* ===========================================================
-   伝送(1層どうしをつなぐ経路)のアニメーション
+   3層トランスポート層 ― 欠け(パケット紛失)の検知
    =========================================================== */
-function runCrossing(onComplete) {
+function checkForLoss() {
+  if (!lossAlert) return;
+  if (state.stage !== 7) {
+    lossAlert.hidden = true;
+    return;
+  }
+  const missing = state.packets
+    .map((p) => p.seq)
+    .filter((seq) => !state.deliveredSeqs.has(seq));
+
+  if (missing.length === 0) {
+    lossAlert.hidden = true;
+    state.awaitingRetransmit = false;
+    return;
+  }
+
+  state.awaitingRetransmit = true;
+  lossAlert.hidden = false;
+  const list = missing.map((seq) => `#${seq}`).join("、");
+  lossAlertText.textContent =
+    `⚠ ${list} 番のパケットが届いていません。トランスポート層が再送を要求します。`;
+  retransmitBtn.disabled = state.retransmitting;
+  retransmitBtn.textContent = state.retransmitting ? "再送中…" : "再送する";
+}
+
+function updateControlAvailability() {
+  const locked = state.stage >= 8 || state.awaitingRetransmit;
+  nextBtn.disabled = state.busy || locked;
+  autoBtn.disabled = locked && !autoPlayActive;
+}
+
+/* ===========================================================
+   伝送(1層どうしをつなぐ経路)のアニメーション
+   packetsToSend: 送るパケットの配列
+   allowLoss: true のときだけ、紛失シミュレーションの対象になる
+   =========================================================== */
+function runCrossing(packetsToSend, allowLoss, onComplete) {
   layersTrack.innerHTML = "";
-  state.arrivalOrder = [];
-  const n = state.packets.length;
+  const n = packetsToSend.length;
   if (n === 0) {
     onComplete();
     return;
   }
   const shuffle = shuffleInput.checked;
+  let settled = 0;
 
-  state.packets.forEach((p, i) => {
+  packetsToSend.forEach((p, i) => {
+    const isLost = allowLoss && (
+      state.manualLossSeqs.has(p.seq) ||
+      (state.randomLossEnabled && Math.random() * 100 < state.lossRate)
+    );
+
     const el = document.createElement("div");
     el.className = "envelope";
     el.textContent = `#${p.seq}`;
@@ -233,40 +342,45 @@ function runCrossing(onComplete) {
     el.style.animationDelay = `${delay}s`;
 
     el.addEventListener("animationend", () => {
-      el.classList.add("has-arrived");
-      state.arrivalOrder.push(p.seq);
-      if (state.arrivalOrder.length === n) onComplete();
+      if (isLost) {
+        el.classList.add("has-lost");
+      } else {
+        el.classList.add("has-arrived");
+        state.deliveredSeqs.add(p.seq);
+        state.arrivalOrder.push(p.seq);
+      }
+      settled += 1;
+      if (settled === n) onComplete();
     });
 
     layersTrack.appendChild(el);
-    requestAnimationFrame(() => el.classList.add("is-flying"));
+    requestAnimationFrame(() => {
+      el.classList.add(isLost ? "is-lost" : "is-flying");
+    });
   });
 }
 
 /* ===========================================================
    段階の進行
    =========================================================== */
-function setBusy(busy) {
-  state.busy = busy;
-  nextBtn.disabled = busy || state.stage >= 8;
-  autoBtn.disabled = state.stage >= 8 && !autoPlayActive;
+function scrollElementIntoView(el) {
+  if (el && el.scrollIntoView) {
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 }
 
 function scrollActiveRowIntoView() {
-  let target;
   if (state.stage === 4) {
-    target = document.querySelector(".layer-gutter--track");
-  } else {
-    const def = STAGES[state.stage];
-    target = def && document.querySelector(`.layer-cell[data-row="${def.key}"]`);
+    scrollElementIntoView(document.querySelector(".layer-gutter--track"));
+    return;
   }
-  if (target && target.scrollIntoView) {
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
+  const def = STAGES[state.stage];
+  const target = def && document.querySelector(`.layer-cell[data-row="${def.key}"]`);
+  scrollElementIntoView(target);
 }
 
 function advance(onDone) {
-  if (state.stage >= 8) {
+  if (state.stage >= 8 || state.awaitingRetransmit) {
     onDone && onDone();
     return;
   }
@@ -277,7 +391,7 @@ function advance(onDone) {
     state.stage = 4;
     renderAllCells();
     scrollActiveRowIntoView();
-    runCrossing(() => {
+    runCrossing(state.packets, true, () => {
       state.stage = 5;
       renderAllCells();
       scrollActiveRowIntoView();
@@ -293,14 +407,19 @@ function advance(onDone) {
 }
 
 nextBtn.addEventListener("click", () => {
-  if (state.busy || state.stage >= 8) return;
+  if (state.busy || state.stage >= 8 || state.awaitingRetransmit) return;
   setBusy(true);
   advance(() => setBusy(false));
 });
 
+function setBusy(busy) {
+  state.busy = busy;
+  updateControlAvailability();
+}
+
 function autoStep() {
   if (!autoPlayActive) return;
-  if (state.stage >= 8) {
+  if (state.stage >= 8 || state.awaitingRetransmit) {
     stopAutoPlay();
     return;
   }
@@ -311,14 +430,16 @@ function autoStep() {
   setBusy(true);
   advance(() => {
     setBusy(false);
-    if (autoPlayActive) {
+    if (autoPlayActive && !state.awaitingRetransmit) {
       state.autoTimer = setTimeout(autoStep, 900);
+    } else if (state.awaitingRetransmit) {
+      stopAutoPlay();
     }
   });
 }
 
 function startAutoPlay() {
-  if (state.stage >= 8) return;
+  if (state.stage >= 8 || state.awaitingRetransmit) return;
   autoPlayActive = true;
   autoBtn.textContent = "自動再生を停止 ⏸";
   autoStep();
@@ -335,11 +456,38 @@ autoBtn.addEventListener("click", () => {
   if (autoPlayActive) stopAutoPlay(); else startAutoPlay();
 });
 
+/* ===========================================================
+   再送(トランスポート層が欠けを検知したあと、ボタンで実行)
+   =========================================================== */
+if (retransmitBtn) {
+  retransmitBtn.addEventListener("click", () => {
+    if (state.retransmitting) return;
+    const missingPackets = state.packets.filter((p) => !state.deliveredSeqs.has(p.seq));
+    if (missingPackets.length === 0) return;
+
+    state.retransmitting = true;
+    retransmitBtn.disabled = true;
+    retransmitBtn.textContent = "再送中…";
+    scrollElementIntoView(document.querySelector(".layer-gutter--track"));
+
+    // 再送したパケットは必ず届く(2回目の紛失判定はしない)
+    runCrossing(missingPackets, false, () => {
+      state.retransmitting = false;
+      renderAllCells();
+      scrollElementIntoView(document.querySelector('.layer-cell[data-row="receive-transport"]'));
+    });
+  });
+}
+
 function resetDiagram() {
   stopAutoPlay();
   state.stage = 0;
   state.arrivalOrder = [];
+  state.deliveredSeqs = new Set();
+  state.awaitingRetransmit = false;
+  state.retransmitting = false;
   layersTrack.innerHTML = "";
+  if (lossAlert) lossAlert.hidden = true;
   renderAllCells();
   setBusy(false);
 }

@@ -61,6 +61,21 @@
         <span>実際の通信のように、届く順番をバラバラにする</span>
       </label>
 
+      <label class="toggle">
+        <input type="checkbox" id="randomLossInput">
+        <span>ランダムにパケットを紛失させる</span>
+      </label>
+      <div class="layers-loss-rate" id="lossRateWrap" hidden>
+        <label for="lossRateInput" class="field-label">
+          紛失する確率:<output id="lossRateVal">20</output>%
+        </label>
+        <input type="range" id="lossRateInput" min="0" max="50" value="20">
+      </div>
+
+      <p class="field-label">必ず届かないようにするパケット</p>
+      <div class="layers-loss-picker" id="lossPicker"></div>
+      <p class="hint">紛失したパケットは、3層トランスポート層で検知され、再送されます。</p>
+
       <div class="step-nav">
         <button class="primary-btn" id="applyBtn">この内容ではじめから表示する</button>
       </div>
@@ -106,6 +121,10 @@
         <span class="layer-pill layer-pill--transport">3層 トランスポート層</span>
         <p class="layers-role">通し番号を確認し、正しい順に並べ替える</p>
         <div class="layers-packets" id="cell-receive-transport"></div>
+        <div id="lossAlert" class="layers-loss-alert" hidden>
+          <p id="lossAlertText"></p>
+          <button class="secondary-btn" id="retransmitBtn">再送する</button>
+        </div>
       </div>
 
       <!-- 2層 インターネット層 -->
