@@ -16,7 +16,7 @@ const state = {
   autoTimer: null,
 
   // 紛失シミュレーション設定
-  randomLossEnabled: false,
+  randomLossEnabled: true,
   lossRate: 20,          // %
   manualLossSeqs: new Set(), // 必ず届かないようにするseq
 
