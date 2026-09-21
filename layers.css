@@ -23,7 +23,7 @@
 }
 
 .layers-panel {
-  max-width: 760px;
+  max-width: 920px;
   width: 100%;
   margin: 0 auto;
   padding: 0;
@@ -69,6 +69,17 @@
 }
 
 .layers-panel__body h2 { margin-top: 0; }
+
+/* 入力パネルを2カラムに(狭い画面では1カラムに戻す) */
+.layers-input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.8rem;
+}
+
+@media (max-width: 720px) {
+  .layers-input-grid { grid-template-columns: 1fr; }
+}
 
 /* ===========================================================
    パケット紛失シミュレーションの設定(入力パネル内)
